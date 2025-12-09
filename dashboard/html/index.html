@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Administratora Ansible</title>
+    <style>
+        body { font-family: sans-serif; background-color: #333; color: white; text-align: center; padding-top: 50px; }
+        .container { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .card {
+            background: #444; padding: 20px; border-radius: 10px; width: 200px;
+            transition: transform 0.2s; cursor: pointer; text-decoration: none; color: white;
+        }
+        .card:hover { transform: scale(1.05); background: #555; }
+        h3 { margin: 10px 0 0 0; }
+        .icon { font-size: 50px; }
+    </style>
+</head>
+<body>
+    <h1>Moje Laboratorium Ansible</h1>
+    <div class="container">
+        <a href="/ansible/" class="card" target="_blank">
+            <div class="icon">🚀</div>
+            <h3>Serwer Ansible</h3>
+            <p>Master Node</p>
+        </a>
+
+        <a href="/client/" class="card" target="_blank">
+            <div class="icon">💻</div>
+            <h3>Klient Linux</h3>
+            <p>Target Node</p>
+        </a>
+    </div>
+</body>
+</html>
