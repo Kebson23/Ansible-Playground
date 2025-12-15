@@ -16,23 +16,22 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 
 RUN --mount=type=secret,id=shellinabox_password,env=shellinabox_PASS \
-    groupadd -g ${group_GID} ${shellinabox_USER} && \
-    useradd --uid ${user_UID} --gid ${group_GID} --home-dir=${HOME} --create-home ${shellinabox_USER} && \
+    useradd -m -s /bin/bash  ${shellinabox_USER} && \
     usermod -aG sudo ${shellinabox_USER} && \
     echo "${shellinabox_USER}:${shellinabox_PASS}" | chpasswd && \
     echo "${shellinabox_USER} ALL=(ALL) NOPASSWD: /usr/bin/shellinaboxd" > /etc/sudoers.d/${shellinabox_USER} && \
-    chmod 440 /etc/sudoers.d/${shellinabox_USER} && \
-    mv "/etc/shellinabox/options-enabled/00_White On Black.css" "/etc/shellinabox/options-enabled/00_WhiteOnBlack.css" 
+    chmod 440 /etc/sudoers.d/${shellinabox_USER}
 
 COPY --from=scripts running.sh /opt/running.sh
 RUN chmod +x /opt/running.sh
 
+RUN echo 'set bell-style none' >> /etc/inputrc
 EXPOSE ${shellinabox_PORT}
 USER ${shellinabox_USER}
 
 WORKDIR ${HOME}
 
-ENTRYPOINT ["/opt/running.sh"]
+ENTRYPOINT ["/bin/bash","/opt/running.sh"]
 CMD []
 
 

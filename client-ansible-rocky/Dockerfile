@@ -1,4 +1,4 @@
-FROM rockylinux:8-minimal
+FROM rockylinux:9-minimal
 
 ARG shellinabox_USER
 ARG shellinabox_PORT
@@ -8,24 +8,32 @@ ENV shellinabox_USER=${shellinabox_USER}
 ENV shellinabox_PORT=${shellinabox_PORT}
 ENV HOME=/home/${shellinabox_USER}
 
-RUN microdnf install -y epel-release && \
-    microdnf install -y shellinabox sudo  && \
-    microdnf clean all && \
-    rm -fr /tmp/* /var/tmp/*
+RUN microdnf install epel-release -y && \
+    microdnf install sudo -y
 
+COPY compilator/compile-shellinabox.sh /opt/compile-shellinabox.sh
+RUN chmod +x /opt/compile-shellinabox.sh && ./opt/compile-shellinabox.sh
 
 RUN --mount=type=secret,id=shellinabox_password,env=shellinabox_PASS \
-    groupadd -g ${group_GID} ${shellinabox_USER} && \
-    useradd --uid ${user_UID} --gid ${group_GID} --home-dir=${HOME} --create-home ${shellinabox_USER} && \
-    usermod -aG sudo ${shellinabox_USER} && \
+    useradd -m -s /bin/bash ${shellinabox_USER} && \
+    usermod -aG wheel ${shellinabox_USER} && \
     echo "${shellinabox_USER}:${shellinabox_PASS}" | chpasswd && \
     echo "${shellinabox_USER} ALL=(ALL) NOPASSWD: /usr/bin/shellinaboxd" > /etc/sudoers.d/${shellinabox_USER} && \
-    chmod 440 /etc/sudoers.d/${shellinabox_USER} && \
-    mv "/etc/shellinabox/options-enabled/00_White On Black.css" "/etc/shellinabox/options-enabled/00_WhiteOnBlack.css" 
+    chmod 440 /etc/sudoers.d/${shellinabox_USER}
+
 
 COPY --from=scripts running.sh /opt/running.sh
 RUN chmod +x /opt/running.sh
 
+COPY shellinabox-css/00_White_On_Black.css /etc/shellinabox/options-enabled/00_White_on_Black.css
+COPY  shellinabox-css/01_Color_Terminal.css /etc/shellinabox/options-enabled/01_Color_Terminal.css
+RUN mv /etc/shellinabox/options-enabled/00_White_on_Black.css "/etc/shellinabox/options-enabled/00_White On Black.css" && \
+    mv /etc/shellinabox/options-enabled/01_Color_Terminal.css "/etc/shellinabox/options-enabled/01+Color Terminal.css"
+
+
+
+
+RUN echo 'set bell-style none' >> /etc/inputrc
 EXPOSE ${shellinabox_PORT}
 USER ${shellinabox_USER}
 

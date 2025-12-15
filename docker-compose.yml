@@ -21,6 +21,7 @@ services:
       context: ./dashboard
       dockerfile: Dockerfile
     image: ansible-dashboard:latest
+    hostname: ansible-dashboard
     container_name: ansible-dashboard
     ports:
       - "8080:80"
@@ -43,6 +44,7 @@ services:
       ansible-network:
         ipv4_address: 172.16.0.2
     image: server-ansible:latest
+    hostname: server-ansible
     container_name: server-ansible
     ports:
       - "4444:4200"
@@ -60,6 +62,7 @@ services:
       ansible-network:
         ipv4_address: 172.16.0.3
     image: ansible-node1:latest
+    hostname: ansible-node1
     container_name: ansible-node1
     ports:
       - "4555:4200" 
@@ -75,12 +78,12 @@ services:
         - shellinabox_password
     networks:
       ansible-network:
-        ipv4_address: 172.16.0.6
+        ipv4_address: 172.16.0.4
     image: ansible-node2:latest
+    hostname: ansible-node2
     container_name: ansible-node2
     ports:
       - "4666:4200"
-
 
 networks:
   ansible-network:
