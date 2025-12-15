@@ -1,0 +1,95 @@
+secrets:
+  shellinabox_password:
+    file: ./passphrase-shellinabox/secrets 
+
+x-shared-contexts: &scripts-context
+  scripts: ./running
+
+x-common-args: &multi-args
+  shellinabox_USER: "admin"
+  shellinabox_PORT: "4200"
+
+x-service-defaults: &services
+  init: true
+  restart: unless-stopped
+
+services:
+
+  dashboard:
+    <<: *services
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    image: ansible-dashboard:latest
+    hostname: ansible-dashboard
+    container_name: ansible-dashboard
+    ports:
+      - "8080:80"
+    depends_on:
+      - server-ansible
+      - ansible-node1
+    networks:
+      ansible-network:
+        ipv4_address: 172.16.0.5
+  server-ansible:
+    <<: *services
+    build:
+      context: ./server-ansible
+      additional_contexts: *scripts-context
+      dockerfile: Dockerfile
+      secrets:
+        - shellinabox_password
+      args: *multi-args
+    networks:
+      ansible-network:
+        ipv4_address: 172.16.0.2
+    image: server-ansible:latest
+    hostname: server-ansible
+    container_name: server-ansible
+    ports:
+      - "4444:4200"
+
+  ansible-node1:
+    <<: *services
+    build:
+      context: ./client-ansible-debian
+      dockerfile: Dockerfile
+      args: *multi-args
+      additional_contexts: *scripts-context
+      secrets:
+        - shellinabox_password
+    networks:
+      ansible-network:
+        ipv4_address: 172.16.0.3
+    image: ansible-node1:latest
+    hostname: ansible-node1
+    container_name: ansible-node1
+    ports:
+      - "4555:4200" 
+
+  ansible-node2:
+    <<: *services
+    build:
+      context: ./client-ansible-rocky
+      dockerfile: Dockerfile
+      args: *multi-args
+      additional_contexts: *scripts-context
+      secrets:
+        - shellinabox_password
+    networks:
+      ansible-network:
+        ipv4_address: 172.16.0.4
+    image: ansible-node2:latest
+    hostname: ansible-node2
+    container_name: ansible-node2
+    ports:
+      - "4666:4200"
+
+networks:
+  ansible-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/24
+          gateway: 172.16.0.1
+

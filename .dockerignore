@@ -1,0 +1,9 @@
+secrets
+.git
+.gitignore
+Dockerfile~
+*.log
+*.tmp
+*.swp
+*.swo
+.vscode
