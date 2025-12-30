@@ -9,7 +9,7 @@ ENV shellinabox_PORT=${shellinabox_PORT}
 ENV HOME=/home/${shellinabox_USER}
 
 RUN microdnf install epel-release -y && \
-    microdnf install sudo -y
+    microdnf install sudo openssh-server python -y
 
 COPY compilator/compile-shellinabox.sh /opt/compile-shellinabox.sh
 RUN chmod +x /opt/compile-shellinabox.sh && ./opt/compile-shellinabox.sh
@@ -18,7 +18,7 @@ RUN --mount=type=secret,id=shellinabox_password,env=shellinabox_PASS \
     useradd -m -s /bin/bash ${shellinabox_USER} && \
     usermod -aG wheel ${shellinabox_USER} && \
     echo "${shellinabox_USER}:${shellinabox_PASS}" | chpasswd && \
-    echo "${shellinabox_USER} ALL=(ALL) NOPASSWD: /usr/bin/shellinaboxd" > /etc/sudoers.d/${shellinabox_USER} && \
+    echo "${shellinabox_USER} ALL=(ALL) NOPASSWD: /usr/bin/shellinaboxd, /usr/sbin/sshd,/usr/bin/ssh-keygen" > /etc/sudoers.d/${shellinabox_USER} && \
     chmod 440 /etc/sudoers.d/${shellinabox_USER}
 
 

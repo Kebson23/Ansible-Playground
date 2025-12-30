@@ -1,0 +1,73 @@
+- name: Prepared envirnoment for ssh keys from client
+  hosts: all
+  connection: local
+  become: false
+  vars:
+    path_for_dir_ssh: "{{ lookup('env', 'HOME') ~ '/.ssh/' }}"
+    path_for_known_hosts: "{{ lookup('env', 'HOME') ~ '/.ssh/known_hosts'}}"
+
+  tasks:
+    - name: Ensure .ssh directory exists for control user
+      file:
+        path: "{{ lookup('env', 'HOME') ~ '/.ssh' }}"
+        state: directory
+        owner: "admin"
+        group: "admin"
+        mode: "0700"
+  
+    - name: Downlaod fingerprint from remote servers and add to localhost
+      shell: "ssh-keyscan -t ecdsa -H {{ ansible_host }} | grep -v '^#'"
+      register: clean_key_ecdsa
+      delegate_to: localhost
+      changed_when: false
+  
+    - name: Add fingerprint to known_hosts file
+      known_hosts:
+        name: "{{ ansible_host }}"
+        key: "{{ clean_key_ecdsa.stdout }}"
+        path: "{{ path_for_known_hosts }}"
+        state: present
+      delegate_to: localhost
+      when: clean_key_ecdsa != ""
+  
+
+- name: Bootstrap autoatmion ssh_user
+  hosts: all
+  become: true
+
+  vars:
+    ansible_user: admin
+    new_user: ansible
+    automation_key: /home/admin/ansible_keys/id_ansible.pub
+
+
+  tasks:
+    - name: Ensure user for ansible exists
+      user:
+          name: "{{ new_user }}"
+          shell: /bin/bash
+          create_home: true
+          state: present
+    
+    - name: Ensure .ssh directory exists for automation user
+      file:
+        path: "/home/{{ new_user }}/.ssh"
+        state: directory
+        owner: "{{ new_user }}"
+        group: "{{ new_user }}"
+        mode: "0700"
+
+    - name: Install authorzied key for automation user
+      authorized_key:
+        user: "{{ new_user }}"
+        key: "{{ lookup('file', automation_key) }}"
+        state: present
+    
+    - name: Allow ssh wihtout password
+      copy:
+        dest: "/etc/sudoers.d/{{ new_user }}"
+        content: "{{ new_user }} ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
+        validate: "/usr/sbin/visudo -cf %s"

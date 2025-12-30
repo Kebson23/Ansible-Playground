@@ -9,7 +9,7 @@ ENV shellinabox_PORT=${shellinabox_PORT}
 ENV HOME=/home/${shellinabox_USER}
 
 RUN DEBIAN_FRONTEND=noninteractive \
-    apt update && apt --no-install-recommends install -y shellinabox sudo && \
+    apt update && apt --no-install-recommends install -y shellinabox sudo openssh-server python3 && \
     rm -rf /var/lib/apt/lists/* && \
     rm -fr /tmp/* /var/tmp/* && apt clean
 
@@ -19,7 +19,7 @@ RUN --mount=type=secret,id=shellinabox_password,env=shellinabox_PASS \
     useradd -m -s /bin/bash  ${shellinabox_USER} && \
     usermod -aG sudo ${shellinabox_USER} && \
     echo "${shellinabox_USER}:${shellinabox_PASS}" | chpasswd && \
-    echo "${shellinabox_USER} ALL=(ALL) NOPASSWD: /usr/bin/shellinaboxd" > /etc/sudoers.d/${shellinabox_USER} && \
+    echo "${shellinabox_USER} ALL=(ALL) NOPASSWD: /usr/bin/shellinaboxd, /usr/sbin/sshd" > /etc/sudoers.d/${shellinabox_USER} && \
     chmod 440 /etc/sudoers.d/${shellinabox_USER}
 
 COPY --from=scripts running.sh /opt/running.sh

@@ -28,6 +28,7 @@ services:
     depends_on:
       - server-ansible
       - ansible-node1
+      - ansible-node2
     networks:
       ansible-network:
         ipv4_address: 172.16.0.5
@@ -45,6 +46,9 @@ services:
         ipv4_address: 172.16.0.2
     image: server-ansible:latest
     hostname: server-ansible
+    volumes:
+      - ./data:/home/admin/data 
+      - ./running/ansible-preconf.py:/home/admin/ansible-preconf.py
     container_name: server-ansible
     ports:
       - "4444:4200"
