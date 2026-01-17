@@ -4,7 +4,6 @@ set -euo pipefail
 ENABLE_SSH=${ENABLE_SSH:-true}
 ecdsa_key="/etc/ssh/ssh_host_ecdsa_key"
 
-
 if [ "$ENABLE_SSH" = "true" ]; then
     if [ ! -f $ecdsa_key ]; then
         sudo ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ""
@@ -14,8 +13,6 @@ if [ "$ENABLE_SSH" = "true" ]; then
     fi
 fi
 
-
- 
 
 exec sudo /usr/bin/shellinaboxd --no-beep --user=${shellinabox_USER} --group=${shellinabox_USER} --port=${shellinabox_PORT} -q \
  -c /var/lib/shellinabox \

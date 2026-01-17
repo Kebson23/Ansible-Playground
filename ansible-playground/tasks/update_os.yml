@@ -1,0 +1,22 @@
+- name: Update pacakges on Debian Family
+  apt: 
+    update_cache: true
+    upgrade: safe 
+  when: ansible_facts.os_family == "Debian"
+
+- name: Check if microdnf command exists 
+  command: command -v microdnf
+  register: has_microdnf
+  changed_when: false
+  failed_when: false 
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Update using microdnf 
+  command: microdnf update -y
+  register: microdnf_out 
+  changed_when: "'Nothing to do.' not in microdnf_out.stdout"
+  when:
+    - ansible_facts.os_family == "RedHat"
+    - has_microdnf.rc == 0
+
+

@@ -27,8 +27,6 @@ services:
       - "8080:80"
     depends_on:
       - server-ansible
-      - ansible-node1
-      - ansible-node2
     networks:
       ansible-network:
         ipv4_address: 172.16.0.5
@@ -47,7 +45,7 @@ services:
     image: server-ansible:latest
     hostname: server-ansible
     volumes:
-      - ./data:/home/admin/data 
+      - ./ansible-playground:/home/admin/ansible-playgound
       - ./running/ansible-preconf.py:/home/admin/ansible-preconf.py
     container_name: server-ansible
     ports:
@@ -68,6 +66,8 @@ services:
     image: ansible-node1:latest
     hostname: ansible-node1
     container_name: ansible-node1
+    depends_on:
+      - server-ansible
     ports:
       - "4555:4200" 
 
@@ -86,6 +86,8 @@ services:
     image: ansible-node2:latest
     hostname: ansible-node2
     container_name: ansible-node2
+    depends_on:
+      - server-ansible
     ports:
       - "4666:4200"
 
