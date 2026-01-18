@@ -15,7 +15,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 
 
-RUN --mount=type=secret,id=shellinabox_password,env=shellinabox_PASS \
+RUN --mount=type=secret,id=shellinabox_password \
+    shellinabox_PASS="$(tr -d '\r\n' < /run/secrets/shellinabox_password)"; \
     useradd -m -s /bin/bash  ${shellinabox_USER} && \
     usermod -aG sudo ${shellinabox_USER} && \
     echo "${shellinabox_USER}:${shellinabox_PASS}" | chpasswd && \

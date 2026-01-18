@@ -14,7 +14,8 @@ RUN microdnf install epel-release -y && \
 COPY compilator/compile-shellinabox.sh /opt/compile-shellinabox.sh
 RUN chmod +x /opt/compile-shellinabox.sh && ./opt/compile-shellinabox.sh
 
-RUN --mount=type=secret,id=shellinabox_password,env=shellinabox_PASS \
+RUN --mount=type=secret,id=shellinabox_password \
+    shellinabox_PASS="$(tr -d '\r\n' < /run/secrets/shellinabox_password)"; \
     useradd -m -s /bin/bash ${shellinabox_USER} && \
     usermod -aG wheel ${shellinabox_USER} && \
     echo "${shellinabox_USER}:${shellinabox_PASS}" | chpasswd && \
@@ -39,7 +40,7 @@ USER ${shellinabox_USER}
 
 WORKDIR ${HOME}
 
-ENTRYPOINT ["/opt/running.sh"]
+ENTRYPOINT ["/bin/bash","/opt/running.sh"]
 CMD []
 
 
