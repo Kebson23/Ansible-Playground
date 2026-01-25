@@ -3,13 +3,13 @@
   connection: local
   become: false
   vars:
-    path_for_dir_ssh: "{{ lookup('env', 'HOME') ~ '/.ssh/' }}"
-    path_for_known_hosts: "{{ lookup('env', 'HOME') ~ '/.ssh/known_hosts'}}"
-
+    path_for_dir_ssh: "~/.ssh/"
+    path_for_known_hosts: "~/.ssh/known_hosts"
+  
   tasks:
     - name: Ensure .ssh directory exists for control user
       file:
-        path: "{{ lookup('env', 'HOME') ~ '/.ssh' }}"
+        path: "{{ path_for_dir_ssh }}"
         state: directory
         owner: "admin"
         group: "admin"
@@ -29,17 +29,17 @@
         state: present
       delegate_to: localhost
       when: clean_key_ecdsa != ""
-  
 
 - name: Bootstrap autoatmion ssh_user
   hosts: all
   become: true
-
+  
   vars:
     ansible_user: admin
     new_user: ansible
     automation_key: /home/admin/ansible_keys/id_ansible.pub
-
+    ansible_password: "{{ lookup('unvault', '/data/pass') }}"
+    ansible_become_password: "{{ ansible_password }}"
 
   tasks:
     - name: Ensure user for ansible exists

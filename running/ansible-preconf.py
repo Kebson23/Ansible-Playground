@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 
 class Prerequisite:
 
-    def __init__(self, ansible_user="ansible", key_name="id_ansible", gid="10000", uid="10000"):
+    def __init__(self, ansible_user="ansible", key_name="id_ansible", gid="30000", uid="30000"):
         self.ansible_user = ansible_user
         self.key_name = key_name
         self.__ansible_user_group = ansible_user
@@ -17,19 +17,14 @@ class Prerequisite:
         self.uid = uid
 
     def ensure_user_and_groups_exists(self):
-        print("1.Ensure user and groups exists on the system")
         try:
             grp.getgrnam(self.__ansible_user_group)
-            print("   Group exists")
         except KeyError:
-            print("   Group does not exist, I will create them.")
             self.create_group()
 
         try:
             pwd.getpwnam(self.ansible_user)
-            print("   User exists")
         except KeyError:
-            print("   User does not exist, I will create them.")
             self.create_user()
         
     def _explicitly_lock_password(self):
@@ -40,7 +35,6 @@ class Prerequisite:
             return False, error_msg        
 
     def create_user(self):
-        print("3. Creating users...")
         try:
             subprocess.run(["useradd","-u",self.uid,"-g",self.gid, "-G", "sudo", "-m", "-s","/bin/bash", self.ansible_user], check=True, capture_output=True, text=True)
             self._explicitly_lock_password()
@@ -51,7 +45,6 @@ class Prerequisite:
 
         
     def create_group(self):
-        print("2. Creating groups...")
         try:
             subprocess.run(["groupadd", "-g", self.gid,self.__ansible_user_group], check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as error:
@@ -67,7 +60,6 @@ class Prerequisite:
                 file.write(content_file)
             os.chmod(path_for_sudoers, 0o440)
         except PermissionError as permission:
-            print(f"You do not have privileges to the {path_for_sudoers}, rerun the script with administrator privileges")
             return False
         
         check = subprocess.run(["sudo", "visudo", "-cf", path_for_sudoers], capture_output=True, text=True, check=True)
@@ -88,7 +80,6 @@ class Prerequisite:
                 os.chmod(self.path_for_ssh_dir, 0o600)
             return self.path_for_ssh_dir
         except FileNotFoundError:
-           print(f"Home path for user: {self.ansible_user} doesn't exist.")
            return False
 
 
@@ -157,7 +148,6 @@ class ServerSide(Prerequisite):
             f"{self.full_path_for_private_key}",
             f"/home/admin/ansible_keys/{self.key_name}"],capture_output=True, text=True, check=True)
             if not (_public_key.returncode == 0 and _private_key.returncode == 0):
-                print("Error while configuration ssh keys for user admin")
                 return False
                 
 
@@ -171,8 +161,6 @@ def main():
         request.ensure_user_and_groups_exists()
         request.create_ssh_dir()
         request.create_ssh_key()
-    else:
-        print("Please rerun with an administrator privlieges")
 
 
 if __name__ == "__main__":

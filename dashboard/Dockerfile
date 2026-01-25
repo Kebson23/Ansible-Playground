@@ -1,10 +1,19 @@
 FROM nginx:alpine
 
-RUN rm -r /etc/nginx/conf.d/default.conf
+RUN rm /etc/nginx/conf.d/default.conf && \
+    rm -rf /usr/share/nginx/html/*
 
-COPY conf.d/default.conf /etc/nginx/conf.d/default.conf
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx/conf.d && \
+    touch /var/run/nginx.pid && \
+    chown -R nginx:nginx /var/run/nginx.pid
 
-COPY html/ /usr/share/nginx/html/
+COPY --chown=nginx:nginx conf.d/default.conf /etc/nginx/conf.d/default.conf
+COPY --chown=nginx:nginx html/ /usr/share/nginx/html/
+
+USER nginx
 
 EXPOSE 80
 

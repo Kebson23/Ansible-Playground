@@ -20,7 +20,7 @@ check_os()
 
 prepare_env()
 {
-    OUTPUT=$(sudo microdnf install -y epel-release git openssl-devel pam-devel zlib-devel autoconf automake libtool gcc gcc-c++ make tar gzip 2>&1)
+    OUTPUT=$(microdnf install -y epel-release git openssl-devel pam-devel zlib-devel autoconf automake libtool gcc gcc-c++ make tar gzip 2>&1)
 
     if [ $? -eq 0 ]; then
         
@@ -29,9 +29,9 @@ prepare_env()
         git clone $shellinabox_git
         cd $shellinabox
         compilator
-        sudo mkdir -p /var/lib/shellinabox
-        sudo useradd -r shellinabox
-        sudo chown shellinabox:shellinabox /var/lib/shellinabox
+        mkdir -p /var/lib/shellinabox
+        useradd -r shellinabox
+        chown shellinabox:shellinabox /var/lib/shellinabox
     else
         echo $OUTPUT > /tmp/logs.txt
         exit 1
@@ -42,13 +42,13 @@ compilator()
 {
     autoreconf -i
     ./configure LIBS="-lssl -lcrypto" --prefix=/usr --bindir=/usr/bin
-    sudo make
-    sudo make install
+    make
+    make install
 }
 
 clean_up()
 {
-    sudo microdnf remove -y \
+    microdnf remove -y \
     perl-Git \
     git \
     openssl-devel \
@@ -60,8 +60,8 @@ clean_up()
     gcc-c++ \
     make \
     libtool
-    sudo microdnf clean all -y 
-    sudo rm -fr /tmp/* && sudo rm -fr /var/tmp/*
+    microdnf clean all -y 
+    rm -fr /tmp/* && rm -fr /var/tmp/*
 }
 
 main()

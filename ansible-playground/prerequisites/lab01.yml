@@ -4,7 +4,7 @@
   tasks:
     - name: Update os 
       include_tasks:
-        file: ../../tasks/update_os.yml
+        file: ../tasks/update_os.yml
 
       
       
