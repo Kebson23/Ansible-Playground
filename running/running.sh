@@ -16,17 +16,26 @@ if [ "$ENABLE_SSH" = "true" ]; then
 fi
 
 if [[ "$hostname_ansible_server" == "ansible-server" ]]; then 
+    cd "${project_dir}" || exit 1
+    PASS_FILE="${project_dir}/pass"
+    VAULT_PASS_FILE="${project_dir}/vault_pass"
+    ADMIN_PASS=$(ansible-vault view ${PASS_FILE} --vault-password-file ${VAULT_PASS_FILE})
+
     ANSIBLE_DIR="${project_dir}/ansible-playground"
-    cd "${ANSIBLE_DIR}" || exit 1
-    HOSTS_IN_INVENTORY_FILE=$(ansible all --list-hosts | grep -oP 'hosts \(\K[0-9]+(?=\):)')
-    if [ "$HOSTS_IN_INVENTORY_FILE" -eq 0 ] || [ -z "$HOSTS_IN_INVENTORY_FILE" ]; then
-        exit 0
+    REQ_PERMISSION_ANSIBLE_DIR='755'
+    CONF_ANSIBLE_FILE="${ANSIBLE_DIR}/ansible.cfg"
+    REQ_PERMISSION_ANSIBLE_FILE='644'
+    
+    su admin -c "
+    [[ \$(stat -c '%a' $ANSIBLE_DIR) != $REQ_PERMISSION_ANSIBLE_DIR ]]  && sudo -S chmod -R $REQ_PERMISSION_ANSIBLE_DIR $ANSIBLE_DIR <<< '$ADMIN_PASS'
+    [[ \$(stat -c '%a' $CONF_ANSIBLE_FILE) != $REQ_PERMISSION_ANSIBLE_FILE ]]  && sudo -S chmod -R $REQ_PERMISSION_ANSIBLE_FILE $CONF_ANSIBLE_FILE <<< '$ADMIN_PASS'
+
+    cd '${ANSIBLE_DIR}' || exit 1
+    HOSTS_IN_INVENTORY_FILE=\$(ansible all --list-hosts | grep -oP 'hosts \(\K[0-9]+(?=\):)')
+    if [ \"\$HOSTS_IN_INVENTORY_FILE\" -eq 0 ] || [ -z \"\$HOSTS_IN_INVENTORY_FILE\" ]; then
+       exit 1
     fi
 
-    PASS_FILE="../pass"
-    VAULT_PASS_FILE="../vault_pass"
-    ADMIN_PASS=$(ansible-vault view ${PASS_FILE} --vault-password-file ${VAULT_PASS_FILE})
-    su admin -c "
     if ! ansible all -m ping -o > /dev/null 2>&1; then
         export ANSIBLE_SSH_COMMON_ARGS='-o StrictHostKeyChecking=accept-new' && \
         ansible-playbook prerequisites/lab00.yml --vault-password-file ${VAULT_PASS_FILE} \
